@@ -1,0 +1,147 @@
+// Dark professional theme - sophisticated and modern
+:root {
+    // Core colors - deep charcoal with subtle warmth
+    --foreground: #e2e8f0;
+    --background: #0a0e1a;
+    --secondary: #8b92a7;
+    --tertiary: #1a1f2e;
+    --accent: #9ca3af;
+    --accent-highlight: #b0b7c3;
+    --table-border: #1a1f2e;
+    --table-row: #0f1419;
+    --code-bg: #0f1419;
+    --code-fg: #e2e8f0;
+    --code-punctuation: #8b92a7;
+    --code-inline-fg: #e2e8f0;
+    
+    // Syntax highlighting - refined colors
+    --code-keyword: #a78bfa;
+    --code-string: #34d399;
+    --code-number: #f472b6;
+    --code-function: #60a5fa;
+    --code-comment: #64748b;
+    --code-operator: #8b92a7;
+    --code-class: #fbbf24;
+    --code-variable: #34d399;
+    
+    // Shadows and overlays
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow-strong: rgba(0, 0, 0, 0.7);
+    --card-bg: #141925;
+    --header-bg: rgba(10, 14, 26, 0.98);
+    
+    // Accent colors - professional gray palette
+    --primary-accent: #9ca3af;
+    --primary-accent-light: #b0b7c3;
+    --secondary-accent: #14b8a6;
+    --secondary-accent-light: #2dd4bf;
+    
+    // Gradient colors
+    --gradient-start: #1a1f2e;
+    --gradient-mid: #141925;
+    --gradient-end: #0f1419;
+}
+
+// Base styles without theming conditionals
+body {
+    color: var(--foreground);
+    background-color: var(--background);
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.secondary {
+    color: var(--secondary);
+}
+
+a, a:link, a:visited {
+    color: var(--primary-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--primary-accent-light);
+    text-decoration: underline;
+}
+
+blockquote {
+    border-left: 3px solid var(--primary-accent);
+    margin-left: 0;
+    padding-left: 1em;
+    font-style: italic;
+    color: var(--secondary);
+    background: var(--card-bg);
+    padding: 1em 1em 1em 1.5em;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin: 1.5rem 0;
+}
+
+// Enhanced code styling
+code {
+    background-color: var(--code-bg);
+    color: var(--code-inline-fg) !important;
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+    font-size: 0.9em;
+    font-family: 'Fira Code', monospace;
+}
+
+pre {
+    background-color: var(--code-bg) !important;
+    border-radius: 8px !important;
+    padding: 1.25em;
+    overflow: auto;
+    box-shadow: 0 4px 12px var(--shadow);
+    border-left: 3px solid var(--primary-accent);
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--code-fg) !important;
+    font-family: 'Fira Code', monospace;
+    tab-size: 4;
+}
+
+.footnote-definition sup {
+    color: var(--secondary);
+}
+
+.footnotes {
+    border-top: 1px solid var(--table-border);
+}
+
+.footnotes-list li {
+    color: var(--secondary);
+
+    p {
+        color: var(--foreground);
+    }
+}
+
+hr {
+    border: none;
+    border-bottom: 1px solid var(--table-border);
+    margin: 2em 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+    
+    th, td {
+        border-color: var(--table-border);
+        padding: 0.5em 0.8em;
+    }
+
+    thead, tr:nth-child(even) {
+        background-color: var(--table-row);
+    }
+    
+    th {
+        text-align: left;
+        font-weight: 600;
+    }
+}
