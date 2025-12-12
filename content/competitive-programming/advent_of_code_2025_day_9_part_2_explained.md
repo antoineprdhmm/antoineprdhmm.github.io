@@ -1,6 +1,6 @@
 +++
 title = "Advent of Code 2025 Day 9 Part 2 Explained - Movie Theater"
-description = "Detailled explaination of how I solved the part 2 of day 24 for AoC 2024, Crossed Wires, with a link to my Rust implementation."
+description = "Detailled explaination of how I solved the part 2 of day 9 for AoC 2025, Movie Theater, with a link to my Rust implementation."
 date = 2025-12-11
 +++
 
