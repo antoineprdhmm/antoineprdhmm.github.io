@@ -29,12 +29,17 @@ title = "Antoine Prudhomme"
   <div class="post-card">
       <h3><a href="/software-engineering/">Software Engineering</a>
       </h3>
-      <p>A bit of everything</p>
+      <p>👨🏻‍💻</p>
     </div>
     <div class="post-card">
       <h3><a href="/competitive-programming/">Competitive Programming</a>
       </h3>
       <p>For fun</p>
+    </div>
+    <div class="post-card">
+      <h3><a href="/finance/">Finance</a>
+      </h3>
+      <p>💸</p>
     </div>
   </div>
 </div>
