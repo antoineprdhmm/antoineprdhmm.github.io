@@ -83,9 +83,7 @@ SIEMENS ENERGY AG représente 9,36 % du panier de substitution. C’est à dire 
 
 Sans cet ETF synthétique, Siemens Energy n’aurait probablement pas reçu ces 500 millions.
 
-Pour notre situation, ce n’est sans doute pas un problème. Mais si on imagine tous les ETF synthétiques, ça doit forcément foutre le bordel.
-
-Bref, je m’égare. Peut être un sujet pour une prochaine fois.
+Pour notre situation, ce n’est sans doute pas un problème. Mais si on imagine tous les ETF synthétiques, ça doit forcément foutre le bordel. Ça me parait pas très sain.
 
 ---
 
@@ -134,6 +132,6 @@ En étant sur CTO, je suis libre de vendre et d’acheter absolument tout:
 
 Je peux rapidement me positionner en Actions, ETF, Or, Crypto, devises, .. Et donc être en capacité de protéger mon épargne dans toutes les situations.
 
-C’est le choix que j’ai fait. Ça ne veut pas dire que c’est le meilleur choix, mais c’est celui qui me convient pour le moment.
+C’est le choix que j’ai fait. Au vu de la situation actuelle ça me semble être un bon choix.
 
-Mieux vaut gagner un peu moins que tout perdre.
+Mieux vaut gagner un peu moins que tout perdre. Et encore: vu la performance en 2025 des marchés émergents et de l'or par rapport au World, je ne suis pas à plaindre.
