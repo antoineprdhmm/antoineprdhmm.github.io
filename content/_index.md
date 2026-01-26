@@ -24,7 +24,15 @@ title = "Antoine Prudhomme"
 </div>
 
 <div class="portfolio-section">
-  <h2>Content</h2>
+  <h2>Projects</h2>
+  <div class="posts-preview">
+  <div class="post-card">
+      <h3><a href="/pnlparse/introduction">PNLParse</a>
+      </h3>
+      <p>Analyze trades and returns from broker files. Your data never leaves your machine.</p>
+    </div>
+  </div>
+  <h2>Posts</h2>
   <div class="posts-preview">
   <div class="post-card">
       <h3><a href="/software-engineering/">Software Engineering</a>
