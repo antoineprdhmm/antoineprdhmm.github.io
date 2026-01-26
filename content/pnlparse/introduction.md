@@ -30,7 +30,8 @@ PNLParse is available for Windows, Linux, and macOS.
 <a href="/pnlparse/PNLParse_1.0.0_x64-setup.exe" target="_blank">Download for Windows</a>  
 
 ### Linux
-<a href="/pnlparse/PNLParse_1.0.0_amd64.AppImage" target="_blank">Download for Linux</a>  
+<a href="/pnlparse/PNLParse_1.0.0_amd64.deb" target="_blank">Download .deb (Ubuntu/Debian)</a>  
+<a href="/pnlparse/PNLParse-1.0.0-1.x86_64.rpm" target="_blank">Download .rmp (Redhat dist.)</a>  
 
 ### macOS
 <a href="/pnlparse/PNLParse_1.0.0_aarch64.dmg" target="_blank">Download for macOS (Apple Silicon)</a>  
