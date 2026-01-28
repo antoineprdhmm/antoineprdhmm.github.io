@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Detailled explaination of how I solved day 10 for AoC 2025, Factory, with a link to my Rust implementation.">
+    <title> | Advent of Code 2025 Day 10 Explained - Reactor</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=0eec6f6b07960be55245">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <div class="header-content">
+        <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io"></a></h1>
+        <nav class="header-links">
+            <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io" class="home-link">&larr; Home</a>
+        </nav>
+    </div>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Advent of Code 2025 Day 10 Explained - Reactor</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2025-12-16" class="post-date">
+                    December 16, 2025
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <p>You can find my <a href="https://github.com/antoineprdhmm/advent_of_code/blob/master/src/y2025/day10/mod.rs">Rust implementation on Github</a>.</p>
+<p>Solving this one feels like:
+<img src="/rocky.png" /></p>
+<h1 id="part-1">Part 1</h1>
+<p>Pressing a button toggles some lights:</p>
+<ul>
+<li>off (0) → on (1)</li>
+<li>on (1) → off (0)</li>
+</ul>
+<p>This is exactly the behavior of an <strong>XOR</strong>.</p>
+<p>Our goal is to find the <strong>minimum number of buttons</strong> to press to reach a given lights configuration.</p>
+<p>There are two important things to understand:</p>
+<ul>
+<li>
+<p>Pressing the same button an <strong>even</strong> number of times is equivalent to doing nothing.</p>
+<p>Given → is a press:</p>
+<ul>
+<li>With 2 presses: <strong>0</strong> → 1 → <strong>0</strong></li>
+<li>With 4 presses: <strong>1</strong> → 0 → 1 → 0 → <strong>1</strong></li>
+<li>etc.</li>
+</ul>
+</li>
+<li>
+<p>Pressing the same button an <strong>odd</strong> number of times is equivalent to pressing it once.</p>
+<p>Given → is a press:</p>
+<ul>
+<li>With 1 press: <strong>1</strong> → <strong>0</strong></li>
+<li>With 3 presses: <strong>1</strong> → 0 → 1 → <strong>0</strong></li>
+<li>etc.</li>
+</ul>
+</li>
+</ul>
+<p>Which means each button only needs to be pressed <strong>at most once</strong>. Any additional presses are unnecessary.</p>
+<p>Since this is an XOR problem, my idea was to represent everything as <strong>bit vectors</strong>.</p>
+<ul>
+<li>
+<p><code>[.##.]</code> becomes <code>0110</code></p>
+</li>
+<li>
+<p><code>(3) (1,3) (2) (2,3) (0,2) (0,1)</code> become</p>
+<p><code>0001</code>, <code>0101</code>, <code>0010</code>, <code>0011</code>, <code>1010</code>, <code>1100</code></p>
+</li>
+</ul>
+<p>So the problem becomes:</p>
+<blockquote>
+<p>Find the smallest combination of buttons such that the XOR of their bit vectors equals 0110.</p>
+</blockquote>
+<p>Because the number of buttons is small — and each button can only be used once — the number of combinations is limited.</p>
+<p>So the solution is simple: generate all possible combinations, compute the XOR for each one, and keep the smallest combination that matches the target.</p>
+<h1 id="part-2">Part 2</h1>
+<p>We still want to find the <strong>minimum number of button presses</strong>, just like in Part 1.</p>
+<p>But this time, the <strong>joltage keeps increasing</strong>. It no longer behaves like an XOR, and that changes <em>everything</em>.</p>
+<p>In Part 1, we could press each button at most once.</p>
+<p>Now, we might need to press the <strong>same button multiple times</strong> to reach the target joltage.</p>
+<p>Which means the number of combinations can explode, especially given the size of the target joltage in the input.</p>
+<h2 id="a-first-idea-to-get-started">A first idea to get started</h2>
+<p>My first idea was to reuse the bitmask representation of buttons from Part 1.</p>
+<p>Starting from the target joltage, I tried to work my way back to zero by subtracting “ideal” button presses.</p>
+<p>For example, if the target is <code>{3,5,4,7}</code>:</p>
+<p>Then the ideal sequence would look like this:</p>
+<ul>
+<li>3 presses of <code>1111</code> → <code>{0,2,1,4}</code></li>
+<li>1 press of <code>0111</code> → <code>{0,1,0,3}</code></li>
+<li>1 press of <code>0101</code> → <code>{0,0,0,2}</code></li>
+<li>2 presses of <code>0001</code> → <code>{0,0,0,0}</code></li>
+</ul>
+<p>That’s <strong>7 presses minimum</strong> if we had perfect buttons.</p>
+<p>But… we don’t. We only have the buttons given in the input, and they’re much less convenient.</p>
+<p>That’s the real difficulty: finding the right combination of buttons. With the example input, the correct answer is 10 presses.</p>
+<p>But I couldn’t figure out how to systematically find that combination.</p>
+<p>So I tried to look at the problem from another angle.</p>
+<h2 id="another-way-to-see-the-problem">Another way to see the problem</h2>
+<p>Finding a combination that reaches <code>{3,5,4,7}</code> is equivalent to finding a path from <code>{0,0,0,0}</code> to <code>{3,5,4,7}</code> in a <strong>4D grid</strong>, using a fixed set of allowed vectors (the buttons).</p>
+<p>The key observation is that the search space isn’t infinite:</p>
+<ul>
+<li>We know the exact target</li>
+<li>We only move in the positive direction</li>
+<li>As soon as we overshoot the target on any axis, that path is invalid</li>
+</ul>
+<h2 id="so-i-tried-pathfinding">So I tried pathfinding</h2>
+<p>I implemented a simple BFS.</p>
+<p>The idea:</p>
+<ul>
+<li>Start at <code>{0,0,0,0}</code></li>
+<li>The first reachable states are the vectors corresponding to pressing one button</li>
+<li>From there, keep applying all possible button vectors</li>
+<li>Stop when we reach the target</li>
+</ul>
+<p>Something like this:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let mut</span><span> visited: HashSet&lt;Vec&lt;</span><span style="color:#b48ead;">usize</span><span>&gt;&gt; = HashSet::new();
+</span><span>
+</span><span style="color:#b48ead;">let mut</span><span> current_queue = VecDeque::new();
+</span><span style="color:#65737e;">// start at 0
+</span><span style="color:#65737e;">// first reachable points are the button coordinates
+</span><span style="color:#b48ead;">for</span><span> button in &amp;machine.buttons {
+</span><span>    current_queue.</span><span style="color:#96b5b4;">push_back</span><span>((button.</span><span style="color:#96b5b4;">clone</span><span>(), </span><span style="color:#d08770;">1</span><span>));
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">while let </span><span>Some(state) = current_queue.</span><span style="color:#96b5b4;">pop_front</span><span>() {
+</span><span>		</span><span style="color:#65737e;">// target reached
+</span><span>    </span><span style="color:#b48ead;">if </span><span>*state.</span><span style="color:#d08770;">0 </span><span>== machine.joltages {
+</span><span>        sum += state.</span><span style="color:#d08770;">1</span><span>;
+</span><span>        </span><span style="color:#b48ead;">break</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">for</span><span> button in &amp;machine.buttons {
+</span><span>        </span><span style="color:#b48ead;">let</span><span> new_v = </span><span style="color:#96b5b4;">apply_button</span><span>(&amp;state.</span><span style="color:#d08770;">0</span><span>, button);
+</span><span>
+</span><span>        </span><span style="color:#b48ead;">if </span><span style="color:#96b5b4;">is_in_bounds</span><span>(&amp;new_v, &amp;machine.joltages) {
+</span><span>            </span><span style="color:#b48ead;">if </span><span>!visited.</span><span style="color:#96b5b4;">contains</span><span>(&amp;new_v) {
+</span><span>                current_queue.</span><span style="color:#96b5b4;">push_back</span><span>((new_v.</span><span style="color:#96b5b4;">clone</span><span>(), state.</span><span style="color:#d08770;">1 </span><span>+ </span><span style="color:#d08770;">1</span><span>));
+</span><span>                visited.</span><span style="color:#96b5b4;">insert</span><span>(new_v);
+</span><span>            }
+</span><span>        }
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>It worked for the example input… but completely failed on the real input.</p>
+<p>The state space is just <strong>way too big</strong>.</p>
+<h2 id="can-t-find-a-way-to-improve-it">Can’t find a way to improve it</h2>
+<p>At this point, I was stuck.</p>
+<p>I was convinced this vector-based approach was the way to go, but I couldn’t see how to make it efficient. I even thought there might be some advanced math theorem involved.</p>
+<p>I asked ChatGPT for a hint — it told me to look at <strong>Integer Linear Programming</strong>.</p>
+<p>I read a bit about it, but honestly it didn’t feel right:</p>
+<ul>
+<li>Too complex for an AoC problem</li>
+<li>Unrelated to Part 1, and usually Part 1 helps with Part 2</li>
+</ul>
+<p>But I still had no idea what to do next.</p>
+<h2 id="so-i-checked-reddit-for-hints">So I checked Reddit for hints</h2>
+<p>Most people seemed to be using some kind of magic solver like <strong>Z3</strong> in Python. Definitely not the kind of solution I wanted.</p>
+<p>Then I found <a href="https://www.reddit.com/r/adventofcode/comments/1pk87hl/2025_day_10_part_2_bifurcate_your_way_to_victory/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button">this post</a>.</p>
+<p>Super smart, easy to understand, and very much in the AoC spirit.</p>
+<p>And actually, it was actually quite close to my first idea.</p>
+<p>So I implemented my own version of it in Rust.</p>
+<h2 id="finally-a-solution-that-works">Finally, a solution that works</h2>
+<p>The key insight is this:</p>
+<p>If we can reach joltages <code>[1, 2, 3]</code> with <code>n</code> presses, then we can reach <code>[2, 4, 6]</code> with <code>2n</code> presses.</p>
+<p>To reach a target joltage <code>T</code>:</p>
+<ol>
+<li>
+<p>Pick a pattern <code>P</code> (a combination of buttons pressed <strong>once</strong>, just like Part 1)</p>
+</li>
+<li>
+<p>Apply <code>P</code> once → cost is the number of buttons in <code>P</code></p>
+</li>
+<li>
+<p>Remaining target becomes <code>T - P</code></p>
+</li>
+<li>
+<p>Since the remaining target can be obtained by “doubling” a smaller solution:</p>
+<p>→ solve for <code>(T - P) / 2</code>, then double those presses</p>
+</li>
+</ol>
+<p>We just need to make sure that:</p>
+<ul>
+<li>
+<p><code>P ≤ T</code> (we can’t overshoot the target)</p>
+</li>
+<li>
+<p><code>P</code> and <code>T</code> have the <strong>same parity on every position</strong></p>
+<p>(so <code>T - P</code> is even and divisible by 2)</p>
+</li>
+</ul>
+<p>This means we can reuse <strong>exactly the same combinations as Part 1</strong>, instead of exploring a massive state space like in the BFS approach. With this solution, we don’t generate combinations where buttons appear several times. Instead, we simplify the target.</p>
+<p>And it works perfectly.</p>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 . All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

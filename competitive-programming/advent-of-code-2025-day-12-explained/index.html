@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Detailled explaination of how I solved day 12 for AoC 2025, Christmas Tree Farm, with a link to my Rust implementation.">
+    <title> | Advent of Code 2025 Day 12 Explained - Christmas Tree Farm</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=0eec6f6b07960be55245">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <div class="header-content">
+        <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io"></a></h1>
+        <nav class="header-links">
+            <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io" class="home-link">&larr; Home</a>
+        </nav>
+    </div>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Advent of Code 2025 Day 12 Explained - Christmas Tree Farm</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2025-12-17" class="post-date">
+                    December 17, 2025
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <p>You can find my <a href="https://github.com/antoineprdhmm/advent_of_code/blob/master/src/y2025/day12/mod.rs">Rust implementation on Github</a>.</p>
+<hr />
+<p>At first, this looked like an impossible problem to solve with a generic algorithm.</p>
+<p>If you had to do it in real life, you would probably just try things. There’s no obvious “smart” way to do it, I think.</p>
+<p>So I started by looking at the input and noticed that the shapes themselves are pretty simple.</p>
+<p>For a 2D shape, using rotations and flips, you can obtain <strong>8 distinct shapes</strong>
+(the <a href="https://en.wikipedia.org/wiki/Group_(mathematics)#Second_example:_a_symmetry_group">symmetry group of the square</a>).</p>
+<p>In the input, there are only <strong>6 shapes</strong>, each defined on a <strong>3×3</strong> grid.</p>
+<p>At first, I thought there might be some trick involving merging shapes together.</p>
+<p>My initial idea was to generate all 48 shapes (6 × 8) and then try to merge them to find pairs or combinations that leave no empty space.</p>
+<p>But then I realized: just because we can merge shapes without leaving empty space doesn’t mean it’s a valid solution. You might fill a huge contiguous area and leave no room for the remaining pieces. On the other hand, leaving small gaps everywhere might actually be fine.</p>
+<p>Also:</p>
+<ul>
+<li>where you place the first present has a huge impact</li>
+<li>where you place the second one around it too</li>
+<li>and so on…</li>
+</ul>
+<p>I considered working on an infinite grid instead of a fixed one, only checking whether the final width + height fits inside the allowed area.</p>
+<p>Maybe some recursive approach could work? But the number of possibilities is just enormous. It felt completely infeasible.</p>
+<p>And I really didn’t want to manipulate all those shapes 😅</p>
+<p>So I decided to look at the other part of the input: <strong>the regions</strong>.</p>
+<p>There are <strong>1000 regions</strong> in total, which is a lot.</p>
+<p>The challenge is really about fitting a lot of presents into these regions. Otherwise, if the space were always large enough, the problem would be trivial.</p>
+<p>So I started by eliminating the impossible cases.</p>
+<p>If the total number of cells occupied by all the presents (ignoring empty cells) is greater than the available space in a region, then there’s no way it can work. No matter how good the algorithm is.</p>
+<p>To my surprise, <strong>only 467 regions</strong> passed this simple check.</p>
+<p>Among these 467 regions, I tried something very simple.</p>
+<p>What if we don’t try to merge the presents at all?
+What if we just place the 9×9 presents side by side, without any fancy arrangement?</p>
+<p>And surprisingly: it works for all 467 of them.</p>
+<p>Which means we actually don’t need to do anything smart here:</p>
+<ul>
+<li>
+<p>For <strong>533 / 1000</strong>, there are simply more present cells than available area, so no solution is possible</p>
+</li>
+<li>
+<p>For <strong>467 / 1000</strong>, there is enough space that we can place the presents side by side without any special arrangement</p>
+</li>
+</ul>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 . All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

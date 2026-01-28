@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Detailled explaination of how I solved the part 2 of day 9 for AoC 2025, Movie Theater, with a link to my Rust implementation.">
+    <title> | Advent of Code 2025 Day 9 Part 2 Explained - Movie Theater</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=0eec6f6b07960be55245">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <div class="header-content">
+        <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io"></a></h1>
+        <nav class="header-links">
+            <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io" class="home-link">&larr; Home</a>
+        </nav>
+    </div>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Advent of Code 2025 Day 9 Part 2 Explained - Movie Theater</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2025-12-11" class="post-date">
+                    December 11, 2025
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <p>You can find my <a href="https://github.com/antoineprdhmm/advent_of_code/blob/master/src/y2025/day9/mod.rs">Rust implementation on Github</a>.</p>
+<p>The first tricky one of this year, but actually not that tricky!</p>
+<h1 id="part-1">Part 1</h1>
+<p>Nothing difficult here. Since there are no constraints on the rectangles you can build, you just check every pair of coordinates and compute the rectangle areas to find the largest one.</p>
+<h1 id="part-2">Part 2</h1>
+<p>This is where things get tricky.</p>
+<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>..............
+</span><span>.......#...#..
+</span><span>..............
+</span><span>..#....#......
+</span><span>..............
+</span><span>..#......#....
+</span><span>..............
+</span><span>.........#.#..
+</span><span>..............
+</span><span>
+</span><span>..............
+</span><span>.......#XXX#..
+</span><span>.......X...X..
+</span><span>..#XXXX#...X..
+</span><span>..X........X..
+</span><span>..#XXXXXX#.X..
+</span><span>.........X.X..
+</span><span>.........#X#..
+</span><span>..............
+</span><span>
+</span><span>..............
+</span><span>.......#XXX#..
+</span><span>.......XXXXX..
+</span><span>..#XXXX#XXXX..
+</span><span>..XXXXXXXXXX..
+</span><span>..#XXXXXX#XX..
+</span><span>.........XXX..
+</span><span>.........#X#..
+</span><span>..............
+</span></code></pre>
+<p>In Part 1 we only had the red tiles <code>#</code>, and no constraints.</p>
+<p>Now we also have the <strong>green tiles</strong> <code>X</code>, which:</p>
+<ul>
+<li>connect the red tiles together, forming a border and closing the shape</li>
+<li>fill the entire inside of that shape</li>
+</ul>
+<p>The rectangle that we are looking for must be made only of red and green tiles. It essentially means it has to lie completely inside the closed shape.</p>
+<p>At first it looks complicated, especially given the size of the grid and the number of coordinates.</p>
+<p>But remember this: <strong>you don’t need a generic solution. You just need a solution that works for your input.</strong></p>
+<p>I didn’t know where to start.</p>
+<p>When I don’t know where to start, I like to draw things on paper.</p>
+<p>But here my room is too small for these coordinates, so instead I used a tool to plot all the points from my input.</p>
+<p>And here’s what I got:</p>
+<img src="/advent_of_code_2025_day_9_part_2_explained/aoc_2025_9_0.png" />
+<p>It looks like a very special case.</p>
+<p>When you see this kind of input, you know they’re not expecting you to build a generic solution.</p>
+<p>We have a big circle-like shape with multiple layers of points, and 2 dots on the same vertical line at the right inside the circle.</p>
+<p>Then, I drew the green tiles making the borders. Something interesting appeared: there’s a big “no man’s land” right in the middle. It’s impossible to form a rectangle that crosses this center area, because it would include cells that are neither green nor red.</p>
+<p>This immediately tells us the rectangle has to be in the top half or in the bottom half.</p>
+<p><em>There is a tiny connection between the two halves on the right, but it’s too narrow. No chance the largest rectangle hides there.</em></p>
+<img src="/advent_of_code_2025_day_9_part_2_explained/aoc_2025_9_2.png" />
+<p>Now let’s do a simple experiment.</p>
+<p>Try drawing a big rectangle, either in the top half or the bottom half, using any two coordinates of the circle as opposite corners.</p>
+<p>You’ll quickly notice something: <strong>one of the corners always ends up outside the circle.</strong></p>
+<p>This happens simply because of the geometry of the circle.</p>
+<p>There <em>are</em> a few exceptions, like for narrow rectangles. But these will never be the big rectangle we are looking for.</p>
+<img src="/advent_of_code_2025_day_9_part_2_explained/aoc_2025_9_1.png" />
+<p>So how do we solve this problem?</p>
+<ul>
+<li>We’re given a circle of dots</li>
+<li>We must use <strong>two dots as opposite corners</strong> of the rectangle</li>
+<li>The rectangle has to stay <strong>inside the circle</strong> (because only red/green tiles are allowed)</li>
+<li>And because the shape is a circle, it feels impossible</li>
+</ul>
+<p>It’s time to look at these 2 dots.</p>
+<img src="/advent_of_code_2025_day_9_part_2_explained/aoc_2025_9_3.png" />
+<p>One is part of the top half.
+The other is part of the bottom half.</p>
+<img src="/advent_of_code_2025_day_9_part_2_explained/aoc_2025_9_4.png" />
+<p>And if you try to use these inner dots as the <strong>bottom-right corner</strong> (for rectangles in the top half) or the <strong>top-right corner</strong> (for rectangles in the bottom half), you get plenty of big valid rectangles!</p>
+<p>So my guess was:</p>
+<ul>
+<li>To find the biggest rectangle in the <strong>top half</strong>, use the top inner dot as the <strong>bottom-right</strong> corner</li>
+<li>To find the biggest rectangle in the <strong>bottom half</strong>, use the bottom inner dot as the <strong>top-right</strong> corner</li>
+</ul>
+<p>Then take the biggest of the two, and that’s the answer.</p>
+<p>And it turned out to be a valid guess: I got the correct answer with that solution.</p>
+<hr />
+<p>But there’s one thing left to figure out: <strong>How do we check that the rectangle contains only red and green tiles?</strong></p>
+<p>Using these two inner dots gives you lots of valid rectangles, but also plenty of invalid ones. So we still need to verify each rectangle.</p>
+<p>If you look back at the image where I drew the rectangles, you’ll notice that whenever a rectangle goes out of bounds, it’s always a <em>full corner</em> that is out: one vertical side and one horizontal side.</p>
+<p>But we don’t actually need to check both sides.</p>
+<p>It’s enough to check whether <strong>a vertical side crosses a horizontal green border</strong>.</p>
+<p>By <em>horizontal green border</em>, I mean a horizontal line of green tiles between two red tiles on the border of the shape, like this:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>..............
+</span><span>.......#XXX#..
+</span><span>..............
+</span></code></pre>
+<p><strong>How?</strong></p>
+<p>I created a Map where:</p>
+<ul>
+<li>the <strong>key</strong> is the x-coordinate</li>
+<li>the <strong>value</strong> is a list of all y-coordinates where a horizontal border of green tiles exists at that x</li>
+</ul>
+<p>When I want to verify whether a rectangle is valid, I check each of its vertical sides.</p>
+<p>A vertical side has two important points: the top and the bottom (corners of the rectangle).</p>
+<p>Since both share the same x-coordinate, I look up the list of green-border y-values for that x in the hashmap.</p>
+<p>If there exists a tile <code>tile_y</code> such that <code>side_top_y &gt; tile_y &gt; side_bot_y</code> then the side crosses a horizontal green border — meaning the rectangle goes out of bounds — and therefore the rectangle is <strong>invalid</strong>.</p>
+<p>And that’s it!</p>
+<p>Hope it helps.</p>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 . All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
