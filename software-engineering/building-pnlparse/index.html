@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="PNLParse - Analyze trades and returns from broker files. Your data never leaves your machine.">
+    <title> | Building PNLParse: Design and Tradeoffs</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=0eec6f6b07960be55245">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <div class="header-content">
+        <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io"></a></h1>
+        <nav class="header-links">
+            <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io" class="home-link">&larr; Home</a>
+        </nav>
+    </div>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Building PNLParse: Design and Tradeoffs</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2026-01-27" class="post-date">
+                    January 27, 2026
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <h2 id="understanding-the-domain">Understanding the domain</h2>
+<p>Let’s start with a quick tour of the trading domain and the key concepts needed for this post.</p>
+<p>When you trade, you execute transactions to buy or sell assets.</p>
+<p>When you buy an asset you don’t already own, you open a new position. If you want to increase your exposure, you buy more and increase the size of that position.</p>
+<p>If you want to reduce your exposure, you sell part of what you own, partially closing the position. When you sell everything, the position is fully closed.</p>
+<p>Closing a position realizes P&amp;L (profit and loss), based on how much you paid for the asset and how much you received when selling.</p>
+<p>While you own assets, you have unrealized P&amp;L, based on your entry price and current market prices.</p>
+<p>Because positions can be increased or reduced over time, and because market prices change constantly, calculating P&amp;L is more complex than it first appears. The same applies to portfolio performance analysis, where timing is critical.</p>
+<h2 id="pnlparse">PNLParse</h2>
+<p>It’s not really possible to analyse trading performance directly on broker platforms.</p>
+<p>Brokers usually don’t provide features for this. Their job is to make it possible to buy and sell assets. When using multiple brokers, the portfolio is split across platforms, which makes analysis even harder.</p>
+<p>A common solution is to use Google Sheets or Excel. This is convenient because you can fetch market prices with functions like <code>=GOOGLEFINANCE</code> and use built-in formulas for calculations.</p>
+<p>But it’s tedious to maintain and still requires work to build properly. Google Finance is missing many assets (even popular ones like Solana), which can break the spreadsheet approach.</p>
+<p>Also, I’m not very comfortable with Google Sheets or Excel, and I prefer to write code.</p>
+<p>All transactions done on a broker can be downloaded as CSV or XLSX files, with full details for each transaction (asset, volume, date, market price, fees, currencies, exchange rates, etc.).</p>
+<p>So I decided to write a simple Rust program that reads transaction files downloaded from my brokers, performs the analysis, and writes the output to files.</p>
+<p>To get market prices for my open positions, I built a scraper.</p>
+<p>Pretty quickly, I had something better than my Google Sheets, and much more flexible for my needs.</p>
+<p>Then, since I was between jobs for a few weeks, I decided to turn it into an app.</p>
+<h2 id="scope">Scope</h2>
+<p>The problem with side projects is that we’re usually full of energy when starting them, but we rarely finish. As a result, our GitHub accounts often look like cemeteries of unfinished projects that took hours or days to build and are ultimately useless.</p>
+<p>This time, I decided to clearly define the scope of the project—what I would do and what I would not do—in order to build something that matched the time I had available and to know where to stop.</p>
+<p>I wanted something usable for anyone facing the same problem I had, which requires a minimal but well-defined set of features.</p>
+<h3 id="market-prices">Market prices</h3>
+<p>For my personal use, market prices were not difficult to get.</p>
+<p>I don’t have many open positions, so I built a simple scraper to fetch prices from websites like Google Finance or Yahoo Finance.</p>
+<p>But providing market prices for any asset in a production app is a completely different challenge.</p>
+<p>Even for my own use, I had to scrape multiple websites to get all the prices. This complexity would grow quickly as users import transactions involving very different assets. Scraping websites is also only viable at low volume.</p>
+<p>That means relying on APIs, which are not free.</p>
+<p>One option would be to avoid real-time prices and only provide the last closing price, refreshed nightly and stored in a cache.</p>
+<p>But that could still lead to many unnecessary API calls. For example, users might have many open positions but only log in occasionally to check their data.</p>
+<p>Fetching prices on demand and caching them could reduce API usage, but it introduces latency, which hurts the user experience.</p>
+<p>Because of the variety of possible assets, I would likely need to regularly integrate new APIs to satisfy user needs.</p>
+<p>And as the number of open positions and distinct assets grows, usage and rate-limit questions arise: should there be usage-based pricing? Hard limits?</p>
+<p>And that’s only the visible part of the iceberg. It’s not necessarily difficult, but it’s a lot to manage.</p>
+<p>In practice, open positions are already well detailed on broker platforms, since they’re part of the buying and selling process. Also, if you’re even moderately serious about trading, your open positions usually follow predefined rules: stop loss, risk/reward ratio, take profit, etc.</p>
+<p>Once a transaction is made, you mostly let it run and only care about the final result—the realized P&amp;L—when the position is closed.</p>
+<p>For all these reasons, I decided to skip unrealized P&amp;L in PNLParse.</p>
+<p>Open positions are displayed in the app, but without market prices or unrealized P&amp;L.</p>
+<p>It could be a nice feature to have, of course, but it’s clearly out of scope here.</p>
+<h3 id="transaction-files-and-supported-brokers">Transaction files and supported brokers</h3>
+<p>Transactions can be downloaded from any broker with full details (asset, volume, date, market price, fees, currencies, exchange rates, etc.), which is very convenient.</p>
+<ul>
+<li>For users: whatever broker they use, trades can be imported into PNLParse.</li>
+<li>For me: I don’t need to rely on any external data source.</li>
+</ul>
+<p>I wanted to start by supporting two brokers I personally use, so PNLParse includes native integrations for them, allowing me to import their transaction files directly.</p>
+<p>Since it’s impossible to support every broker format in the world, a custom import format is essential. PNLParse provides a simple CSV format containing the essential information for each transaction.</p>
+<p>The idea is to add native integrations for other brokers when requested by users. With the custom format, anyone can already use PNLParse.</p>
+<h3 id="minimal-set-of-features">Minimal set of features</h3>
+<p>To make the app usable and valuable, I defined the following minimal feature set:</p>
+<ul>
+<li>Import trades from any broker (custom format + native integrations)</li>
+<li>Analysis of closed positions:
+<ul>
+<li>Realized P&amp;L</li>
+<li>Detailed breakdown of sold shares (essential to compute true realized P&amp;L)</li>
+</ul>
+</li>
+<li>Display open positions:
+<ul>
+<li>Without market prices and unrealized P&amp;L</li>
+</ul>
+</li>
+<li>Portfolio performance overview with a few key metrics</li>
+</ul>
+<h2 id="should-it-be-a-saas">Should it be a SaaS ?</h2>
+<p>Except at school, I’ve always built SaaS products. It feels like the default way of building apps today, and it does come with a lot of advantages.</p>
+<p>But for this project, I wanted a limited scope and as little responsibility as possible once it was done.</p>
+<p>Because of that, a SaaS didn’t make sense. I didn’t want to manage infrastructure, scaling, security, usage limits, authentication, or any of that.</p>
+<p>Also, the core logic was already implemented in Rust, and I wanted to reuse it.</p>
+<p>I had been wanting to try Tauri for a while — a Rust-based framework for building desktop applications — and it felt like a good fit for this project.</p>
+<p>So PNLParse became an offline desktop app:</p>
+<ul>
+<li>All data comes from transaction files → it can work fully offline</li>
+<li>Users keep their data locally → no file uploads, no servers</li>
+<li>No security, auth, or usage-limit concerns → if users want to break their own app, that’s on them</li>
+<li>No infrastructure or scaling to manage → and no running costs for me</li>
+</ul>
+<h2 id="pricing">Pricing</h2>
+<p>If PNLParse were a SaaS product, pricing would naturally be subscription-based, possibly with different plans depending on the volume of transactions.</p>
+<p>But for an offline desktop app with a fixed feature set, that model doesn’t really make sense. Aside from adding new native broker imports, I don’t expect to spend much ongoing time on it. And adding more imports can attract new users anyway, so it’s something I’m happy to do for free.</p>
+<p>A key difference with SaaS is enforcement. Since all data and logic live on the server, users must authenticate and have an active subscription, otherwise their requests are simply rejected. You’re guaranteed that users are paying.</p>
+<p>With an offline desktop app, things are different. The data and logic live on the user’s machine. You can implement a licensing system, but it’s never fully secure.</p>
+<p>A desktop app can always be hacked.</p>
+<p>You can make hacking harder, but never bulletproof.</p>
+<p>In the end, it comes down to a simple rule: <strong>the cost of hacking versus the cost of buying</strong>. If the price is reasonable for the value provided, most users won’t bother hacking it.</p>
+<p>You <em>can</em> invest time to make it harder to crack, but that comes with additional complexity and responsibilities on my side—again, a tradeoff.</p>
+<p>So my approach was simple: no license required. Anyone can download and use the app.</p>
+<p>This gives users time to try it and see if it’s useful for them.</p>
+<p>If it is, there’s a link to support the project. The amount is €35, which corresponds to what a lifetime license would have cost.</p>
+<p>Why this approach?</p>
+<p>When I was younger, I hacked a lot of software—like almost everyone else. When you’re young, you don’t have money, and piracy is common.</p>
+<p>But once you do have money, you stop hacking. If a tool is useful, you just buy it and enjoy the better experience.</p>
+<h2 id="implementation">Implementation</h2>
+<h3 id="data-storage">Data storage</h3>
+<p>I initially stored the data in JSON files.</p>
+<p>Setting up a database felt like overkill for PNLParse, and with <code>serde</code> it was easy to get something working quickly.</p>
+<p>In practice, though, using SQLite is more efficient, even for a small app like this.</p>
+<p>One reason is performance: deserialization in Rust can become relatively slow, while with SQLite the data is already typed and ready to query.</p>
+<p>Another reason is flexibility. As I added filtering and ordering features to the app, SQL made it much simpler to express and execute those queries.</p>
+<h3 id="my-experience-with-using-tauri">My experience with using Tauri</h3>
+<p>I already had the backend working as a <code>clap</code>-based CLI to interact with it. I mainly needed to polish it to make it production-ready and suitable for use as an application backend.</p>
+<p>For the frontend, I used Next.js and React, as I usually do.</p>
+<p>Tauri essentially acts as the glue between the two and handles the build process. It’s surprisingly simple.</p>
+<p>I added a second entry point to my Rust backend alongside the existing CLI, specifically for Tauri. I then defined a set of Tauri commands to interact with the backend, very similar to the CLI commands. It’s actually close to HTTP API controllers.</p>
+<p>On the frontend side, instead of making HTTP calls to an API, I invoke Tauri commands directly.</p>
+<p>With a bit of build configuration, everything was up and running.</p>
+<p>Overall, the setup is very simple, and the result is a lightweight application with great performance.</p>
+<h2 id="feedback-on-building-an-offline-desktop-app">Feedback on building an offline desktop app</h2>
+<p>Building an offline desktop app with Tauri is actually very simple. I assume it’s fairly similar with alternatives like Electron.</p>
+<p>It doesn’t feel more difficult or fundamentally different from building a web app with React.</p>
+<p>The final installer is only about 7 MB, which makes the app very lightweight.</p>
+<p>The biggest advantage for me is: no infrastructure, no security, and no authentication to manage.</p>
+<p>With a licensing system, some of this would come back, but still far less than with a SaaS.</p>
+<p>The biggest advantage for users is privacy. No data is shared, everything stays local, which is especially important for sensitive data like trading transactions.</p>
+<p>Handling multiple platforms, however, is not as pleasant.</p>
+<p>I need to build the app for Windows, macOS (both Apple Silicon and Intel), and various Linux distributions (Debian, Red Hat, etc.). On my Mac, I can only build macOS binaries. Fortunately, GitHub CI workflows make it possible to build for all platforms and attach the artifacts to a release. Testing on each platform, though, is a bit annoying.</p>
+<p>That’s where web apps really shine: you build and test once, and it works everywhere.</p>
+<p>Another downside is piracy. Even with a licensing system, a desktop app can be freely used and reverse-engineered. This simply doesn’t happen with SaaS products.</p>
+<p>For Windows and macOS, applications should also be signed to provide a better user experience. That adds extra work, and signing macOS apps requires a $99/year Apple developer account.</p>
+<hr />
+<p>If this had been a more serious, long-term project, with coming features like unrealized P&amp;L for open positions, I would have gone with a SaaS.</p>
+<p>But given the scope of PNLParse, an offline desktop app built with Tauri turned out to be the perfect choice.</p>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 . All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

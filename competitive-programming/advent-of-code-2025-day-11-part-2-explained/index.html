@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Detailled explaination of how I solved the part 2 of day 11 for AoC 2025, Reactor, with a link to my Rust implementation.">
+    <title> | Advent of Code 2025 Day 11 Part 2 Explained - Reactor</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=0eec6f6b07960be55245">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <div class="header-content">
+        <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io"></a></h1>
+        <nav class="header-links">
+            <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io" class="home-link">&larr; Home</a>
+        </nav>
+    </div>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Advent of Code 2025 Day 11 Part 2 Explained - Reactor</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2025-12-12" class="post-date">
+                    December 12, 2025
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <p>You can find my <a href="https://github.com/antoineprdhmm/advent_of_code/blob/master/src/y2025/day11/mod.rs">Rust implementation on Github</a>.</p>
+<h2 id="part-1-relieved">Part 1 — 😌</h2>
+<p>No difficulties here. I solved it with a simple BFS that generates all possible paths.</p>
+<h2 id="part-2-hot-face">Part 2 — 🥵</h2>
+<p>This one was a real pain… <strong>until</strong> I found a super simple solution 😅.</p>
+<p>Usually I’m comfortable with graph problems, but the <code>dac</code> and <code>fft</code> devices bothered me. I also got stubborn about using BFS. When I switched later to DFS, everything was much easier.</p>
+<h3 id="first-try-changing-the-minimum-amount-of-code">First Try - Changing the minimum amount of code</h3>
+<p>Part 1 worked perfectly with a simple BFS.</p>
+<p>So my first attempt was just a small change: I kept track of the devices visited by each path. Then, when reaching <code>out</code>, I incremented the counter <strong>only if</strong> that path had visited both <code>dac</code> and <code>fft</code>.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Debug)]
+</span><span style="color:#b48ead;">struct </span><span>PathExplorer {
+</span><span>    </span><span style="color:#bf616a;">device</span><span>: String,
+</span><span>    </span><span style="color:#bf616a;">visited</span><span>: HashSet&lt;String&gt;,
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">let</span><span> graph = </span><span style="color:#96b5b4;">read_rotations</span><span>();
+</span><span>
+</span><span style="color:#b48ead;">let mut</span><span> paths_count = </span><span style="color:#d08770;">0</span><span>;
+</span><span style="color:#b48ead;">let mut</span><span> deque: VecDeque&lt;PathExplorer&gt; = VecDeque::new();
+</span><span>
+</span><span>deque.</span><span style="color:#96b5b4;">push_back</span><span>(PathExplorer {
+</span><span>    device: &quot;</span><span style="color:#a3be8c;">svr</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>(),
+</span><span>    visited: HashSet::from([&quot;</span><span style="color:#a3be8c;">svr</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>()]),
+</span><span>});
+</span><span>
+</span><span style="color:#b48ead;">while let </span><span>Some(p) = deque.</span><span style="color:#96b5b4;">pop_front</span><span>() {
+</span><span>    </span><span style="color:#b48ead;">if</span><span> p.device == &quot;</span><span style="color:#a3be8c;">out</span><span>&quot; {
+</span><span>        </span><span style="color:#b48ead;">if</span><span> p.visited.</span><span style="color:#96b5b4;">contains</span><span>(&quot;</span><span style="color:#a3be8c;">dac</span><span>&quot;) &amp;&amp; p.visited.</span><span style="color:#96b5b4;">contains</span><span>(&quot;</span><span style="color:#a3be8c;">fft</span><span>&quot;) {
+</span><span>            paths_count += </span><span style="color:#d08770;">1</span><span>;
+</span><span>        }
+</span><span>    } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>        </span><span style="color:#b48ead;">for</span><span> device in graph.</span><span style="color:#96b5b4;">get</span><span>(&amp;p.device).</span><span style="color:#96b5b4;">unwrap</span><span>() {
+</span><span>            </span><span style="color:#b48ead;">if </span><span>!p.visited.</span><span style="color:#96b5b4;">contains</span><span>(device.</span><span style="color:#96b5b4;">as_str</span><span>()) {
+</span><span>                </span><span style="color:#b48ead;">let mut</span><span> next_p = PathExplorer {
+</span><span>                    device: device.</span><span style="color:#96b5b4;">clone</span><span>(),
+</span><span>                    visited: p.visited.</span><span style="color:#96b5b4;">clone</span><span>(),
+</span><span>                };
+</span><span>                next_p.visited.</span><span style="color:#96b5b4;">insert</span><span>(device.</span><span style="color:#96b5b4;">clone</span><span>());
+</span><span>                deque.</span><span style="color:#96b5b4;">push_back</span><span>(next_p);
+</span><span>            }
+</span><span>        }
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span>println!(&quot;</span><span style="color:#d08770;">{:?}</span><span>&quot;, paths_count);
+</span></code></pre>
+<p>But this didn’t work: the <code>deque</code> just kept growing and growing forever.</p>
+<h3 id="maybe-there-s-a-loop">Maybe there’s a loop?</h3>
+<p>At first I suspected a cycle somewhere in the graph. I added logic to prevent loops and some logging. But there were loops.</p>
+<h3 id="rule-number-1-if-you-don-t-know-visualize">Rule Number 1: If you don’t know, visualize</h3>
+<p>So I generated a <code>.dot</code> file from the input and rendered the graph.</p>
+<p>Here’s what it looks like 🤯</p>
+<img src="/advent_of_code_2025_day_11_part_2_explained/day11.svg" />
+<p>At the bottom in green, we can see the device <code>out</code>.</p>
+<p>The 2 devices in pink are our entry points: <code>svr</code> and <code>you</code>.</p>
+<p>The 2 devices in red are <code>dac</code> and <code>fft</code>.</p>
+<p>The first thing to notice is that the graph we had to explore in Part 1 was <strong>tiny</strong> compared to Part 2.</p>
+<p>This explains why the <code>deque</code> blows up: the number of possible paths is now huge.</p>
+<p>Another thing that stands out in the visualization: <code>dac</code> and <code>fft</code> are a bit off to the side.</p>
+<h3 id="a-new-idea">A new idea</h3>
+<p>Maybe a lot of nodes can be skipped. Maybe we can shrink the graph enough to reuse the Part-1 algorithm.</p>
+<p>My idea was to eliminate any node that doesn’t eventually lead to <code>out</code>, <code>dac</code>, or <code>fft</code>.</p>
+<p>Then, in this loop:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">for</span><span> device in graph.</span><span style="color:#96b5b4;">get</span><span>(&amp;p.device).</span><span style="color:#96b5b4;">unwrap</span><span>() {
+</span></code></pre>
+<p>…I’d only push the devices that are <em>eligible</em>:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let</span><span> eligible = upstream_out.</span><span style="color:#96b5b4;">contains</span><span>(device)
+</span><span>    &amp;&amp; (p.visited.</span><span style="color:#96b5b4;">contains</span><span>(&quot;</span><span style="color:#a3be8c;">dac</span><span>&quot;) || upstream_dac.</span><span style="color:#96b5b4;">contains</span><span>(device))
+</span><span>    &amp;&amp; (p.visited.</span><span style="color:#96b5b4;">contains</span><span>(&quot;</span><span style="color:#a3be8c;">fft</span><span>&quot;) || upstream_fft.</span><span style="color:#96b5b4;">contains</span><span>(device));
+</span></code></pre>
+<p>Meaning:</p>
+<ul>
+<li>the <code>device</code> must be able to reach <code>out</code></li>
+<li>if <code>dac</code> hasn’t been visited yet, the <code>device</code> must be able to reach <code>dac</code></li>
+<li>if <code>fft</code> hasn’t been visited yet, the <code>device</code> must be able to reach <code>fft</code></li>
+</ul>
+<p>But this didn’t help much, the graph was still too big.</p>
+<h3 id="added-some-logs-to-understand-the-deque">Added some logs to understand the <code>deque</code></h3>
+<p>I decided to log every <code>PathExplorer</code> popped from the <code>deque</code>, and it quickly became obvious: we were visiting the same subpaths <strong>way</strong> too many times. That’s why the <code>deque</code> kept growing endlessly.</p>
+<p>I tried to think of some way to make memoization for BFS, but my brain needed some fresh air.</p>
+<h3 id="rule-number-2-if-visualization-fails-go-for-a-walk">Rule Number 2: if visualization fails, go for a walk</h3>
+<p>While walking in the park, I decided I would try DFS instead.</p>
+<p>It simply makes more sense here:</p>
+<ul>
+<li>We go all the way down a path</li>
+<li>We immediately know whether we reached <code>out</code> with both <code>dac</code> and <code>fft</code> visited</li>
+<li>If yes → +1, we found one valid path</li>
+<li>Then we backtrack one step, explore the other children, backtrack again, and so on…</li>
+</ul>
+<p>For this challenge, DFS just feels more natural. And I decided to implement it <strong>recursively</strong>, which is usually simpler.</p>
+<p>The only thing I didn’t know at that point was how I would do memoization. But it happened naturally.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">dfs</span><span>(
+</span><span>    </span><span style="color:#bf616a;">device</span><span>: String,
+</span><span>    </span><span style="color:#bf616a;">fft</span><span>: </span><span style="color:#b48ead;">bool</span><span>,
+</span><span>    </span><span style="color:#bf616a;">dac</span><span>: </span><span style="color:#b48ead;">bool</span><span>,
+</span><span>    </span><span style="color:#bf616a;">graph</span><span>: &amp;HashMap&lt;String, Vec&lt;String&gt;&gt;,
+</span><span>    </span><span style="color:#bf616a;">memo</span><span>: &amp;</span><span style="color:#b48ead;">mut </span><span>HashMap&lt;(String, </span><span style="color:#b48ead;">bool</span><span>, </span><span style="color:#b48ead;">bool</span><span>), </span><span style="color:#b48ead;">usize</span><span>&gt;,
+</span><span>) -&gt; </span><span style="color:#b48ead;">usize </span><span>{
+</span><span>    </span><span style="color:#b48ead;">if</span><span> device == &quot;</span><span style="color:#a3be8c;">out</span><span>&quot; {
+</span><span>        </span><span style="color:#b48ead;">return if</span><span> fft &amp;&amp; dac { </span><span style="color:#d08770;">1 </span><span>} </span><span style="color:#b48ead;">else </span><span>{ </span><span style="color:#d08770;">0 </span><span>};
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">let mut</span><span> paths_count = </span><span style="color:#d08770;">0</span><span>;
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">let</span><span> next_fft = fft || device == &quot;</span><span style="color:#a3be8c;">fft</span><span>&quot;;
+</span><span>    </span><span style="color:#b48ead;">let</span><span> next_dac: </span><span style="color:#b48ead;">bool </span><span>= dac || device == &quot;</span><span style="color:#a3be8c;">dac</span><span>&quot;;
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">for</span><span> next_device in graph.</span><span style="color:#96b5b4;">get</span><span>(&amp;device).</span><span style="color:#96b5b4;">unwrap</span><span>() {
+</span><span>        </span><span style="color:#b48ead;">if let </span><span>Some(m) = memo.</span><span style="color:#96b5b4;">get</span><span>(&amp;(next_device.</span><span style="color:#96b5b4;">to_string</span><span>(), next_fft, next_dac)) {
+</span><span>            paths_count += m;
+</span><span>        } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>            </span><span style="color:#b48ead;">let</span><span> r = </span><span style="color:#96b5b4;">dfs</span><span>(next_device.</span><span style="color:#96b5b4;">to_string</span><span>(), next_fft, next_dac, graph, memo);
+</span><span>            paths_count += r;
+</span><span>            memo.</span><span style="color:#96b5b4;">insert</span><span>((next_device.</span><span style="color:#96b5b4;">clone</span><span>(), next_fft, next_dac), r);
+</span><span>        }
+</span><span>    }
+</span><span>
+</span><span>    paths_count
+</span><span>}
+</span></code></pre>
+<p>For the memoization, we want to remember:</p>
+<p>“I’ve already reached this node with this state → here’s the result of exploring the rest of the graph from here with this state.”</p>
+<p>And the state is just the arguments of the <code>dfs</code> function:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>device: String,
+</span><span>fft: </span><span style="color:#b48ead;">bool</span><span>,
+</span><span>dac: </span><span style="color:#b48ead;">bool</span><span>,
+</span></code></pre>
+<p>That’s all.</p>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 . All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
