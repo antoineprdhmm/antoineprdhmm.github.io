@@ -4,12 +4,10 @@
 
 {% block header %}
 <header>
-    <div class="header-content">
-        <h1><a href="{{ config.base_url }}">{{ config.title }}</a></h1>
-        <nav class="header-links">
-            <a href="{{ config.base_url }}" class="home-link">&larr; Home</a>
-        </nav>
-    </div>
+    <h1><a href="{{ config.base_url }}">{{ config.title }}</a></h1>
+    <nav>
+        <a href="{{ config.base_url }}">&larr; Home</a>
+    </nav>
 </header>
 {% endblock header %}
 

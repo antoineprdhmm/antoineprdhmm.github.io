@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark-mode">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,9 +7,6 @@
     <title>{% block title %}{{ config.title }}{% endblock title %}</title>
     {% block extra_head %}
     <link rel="stylesheet" href="{{ get_url(path='style.css', cachebust=true) }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     {% endblock extra_head %}
     {% block feed_link %}
         {% if config.generate_feeds %}
@@ -32,20 +29,18 @@
 <body>
     {% block header %}
     <header>
-        <div class="header-content">
-            <h1><a href="{{ config.base_url }}">{{ config.title }}</a></h1>
-            {% set linked_pages = section.pages | filter(attribute="extra.in_header") %}
-            {% if config.extra.links or linked_pages %}
-            <nav class="header-links">
-                {% for link in config.extra.links %}
-                <a href="{{ link.href }}">{{ link.title }}</a>
-                {% endfor %}
-                {% for page in linked_pages %}
-                <a href="{{ page.permalink }}">{{ page.title }}</a>
-                {% endfor %}
-            </nav>
-            {% endif %}
-        </div>
+        <h1><a href="{{ config.base_url }}">{{ config.title }}</a></h1>
+        {% set linked_pages = section.pages | filter(attribute="extra.in_header") %}
+        {% if config.extra.links or linked_pages %}
+        <nav>
+            {% for link in config.extra.links %}
+            <a href="{{ link.href }}">{{ link.title }}</a>
+            {% endfor %}
+            {% for page in linked_pages %}
+            <a href="{{ page.permalink }}">{{ page.title }}</a>
+            {% endfor %}
+        </nav>
+        {% endif %}
     </header>
     {% endblock header %}
     
@@ -60,9 +55,7 @@
     {% endblock content %}
     
     <footer>
-        <div class="footer-content">
-            <p>&copy; {{ now() | date(format="%Y") }} {{ config.title }}. All rights reserved.</p>
-        </div>
+        <p>&copy; {{ now() | date(format="%Y") }} {{ config.title }}</p>
     </footer>
 </body>
 </html>
