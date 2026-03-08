@@ -46,7 +46,7 @@ Then, since I was between jobs for a few weeks, I decided to turn it into an app
 
 The problem with side projects is that we’re usually full of energy when starting them, but we rarely finish. As a result, our GitHub accounts often look like cemeteries of unfinished projects that took hours or days to build and are ultimately useless.
 
-This time, I decided to clearly define the scope of the project—what I would do and what I would not do—in order to build something that matched the time I had available and to know where to stop.
+This time, I decided to clearly define the scope of the project (what I would do and what I would not do) in order to build something that matched the time I had available and to know where to stop.
 
 I wanted something usable for anyone facing the same problem I had, which requires a minimal but well-defined set of features.
 
@@ -76,7 +76,7 @@ And that’s only the visible part of the iceberg. It’s not necessarily diffic
 
 In practice, open positions are already well detailed on broker platforms, since they’re part of the buying and selling process. Also, if you’re even moderately serious about trading, your open positions usually follow predefined rules: stop loss, risk/reward ratio, take profit, etc.
 
-Once a transaction is made, you mostly let it run and only care about the final result—the realized P&L—when the position is closed.
+Once a transaction is made, you mostly let it run and only care about the final result (the realized P&L) when the position is closed.
 
 For all these reasons, I decided to skip unrealized P&L in PNLParse.
 
@@ -119,7 +119,7 @@ Because of that, a SaaS didn’t make sense. I didn’t want to manage infrastru
 
 Also, the core logic was already implemented in Rust, and I wanted to reuse it.
 
-I had been wanting to try Tauri for a while — a Rust-based framework for building desktop applications — and it felt like a good fit for this project.
+I had been wanting to try Tauri for a while: a Rust-based framework for building desktop applications. It felt like a good fit for this project.
 
 So PNLParse became an offline desktop app:
 
@@ -146,17 +146,13 @@ In the end, it comes down to a simple rule: **the cost of hacking versus the cos
 
 You *can* invest time to make it harder to crack, but that comes with additional complexity and responsibilities on my side—again, a tradeoff.
 
-So my approach was simple: no license required. Anyone can download and use the app.
+So my first approach was simple: no license required. Anyone can download and use the app.
 
 This gives users time to try it and see if it’s useful for them.
 
-If it is, there’s a link to support the project. The amount is €35, which corresponds to what a lifetime license would have cost.
+If it is, there’s a link to support the project. 
 
-Why this approach?
-
-When I was younger, I hacked a lot of software—like almost everyone else. When you’re young, you don’t have money, and piracy is common.
-
-But once you do have money, you stop hacking. If a tool is useful, you just buy it and enjoy the better experience.
+But in the end I just decided to [open source the project](https://github.com/antoineprdhmm/pnlparse). 
 
 ## Implementation
 

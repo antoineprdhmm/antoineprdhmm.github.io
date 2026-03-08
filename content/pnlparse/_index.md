@@ -3,6 +3,8 @@ title = "PNLParse"
 description = "Analyze trades and returns from broker files. Your data never leaves your machine."
 +++
 
+*[How I built PNLParse](/content/software-engineering/building-pnlparse.md)*
+
 Tracking your trades across multiple brokers is frustrating—and spreadsheets are a nightmare to maintain. PNLParse makes it effortless.
 
 Brokers make it easy to trade—but not to understand your results. If you use multiple brokers, tracking everything manually becomes nearly impossible.
@@ -19,22 +21,15 @@ No spreadsheets. No cloud uploads. Just clean, private analytics on your own com
 
 Most analytics tools are SaaS, which means your trading data leaves your computer.
 
-PNLParse runs **entirely offline**—your trades **never leave your machine**.
+PNLParse runs **entirely offline**. Your trades **never leave your machine**.
 
 ## Download
 
 PNLParse is available for Windows, Linux, and macOS.
 
-### Windows
-<a href="/pnlparse/PNLParse_1.0.0_x64-setup.exe" target="_blank">Download for Windows</a>
+[Releases](https://github.com/antoineprdhmm/pnlparse/releases)
 
-### Linux
-<a href="/pnlparse/PNLParse_1.0.0_amd64.deb" target="_blank">Download .deb (Ubuntu/Debian)</a>
-<a href="/pnlparse/PNLParse-1.0.0-1.x86_64.rpm" target="_blank">Download .rpm (Redhat dist.)</a>
-
-### macOS
-<a href="/pnlparse/PNLParse_1.0.0_aarch64.dmg" target="_blank">Download for macOS (Apple Silicon)</a>
-<a href="/pnlparse/PNLParse_1.0.0_x64.dmg" target="_blank">Download for macOS (Intel)</a>
+### MacOS users:
 
 > Since PNLParse is not yet registered on the Apple Store, you may see a security warning when launching the app. To bypass it:
 > 1. Open **System Settings** → **Privacy & Security**
@@ -45,22 +40,12 @@ PNLParse is available for Windows, Linux, and macOS.
 
 <img src="/pnlparse/macos_secu.png" width="400" alt="macOS Security Settings" />
 
-## Pricing
-
-PNLParse started as a one-time paid app (€35 for lifetime access). Today, it's **free to try**—no license, subscription, or activation required.
-
-If PNLParse saves you time and simplifies your trading analysis, please consider [supporting development](https://buy.stripe.com/00wdR95Wb6HM7r96AJ0Jq00).
-
 ## Supported Brokers
 
 PNLParse can import transactions from **any broker** via a custom CSV format.
 
-Some brokers are **natively supported** for simplicity. If yours isn't, just send an email to **ntnprdhmm@outlook.com** with:
-- Steps to download your transaction file
-- A sample transaction file
-
-I'll add support as quickly as possible.
+Some brokers are **natively supported** for simplicity. If yours isn't, feel free to [create a Pull Request](https://github.com/antoineprdhmm/pnlparse).
 
 ---
 
-PNLParse makes trading analytics **simple, fast, and private**—so you can focus on trading, not spreadsheets.
+PNLParse makes trading analytics **simple, fast, and private** so you can focus on trading, not spreadsheets.

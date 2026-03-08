@@ -2,8 +2,6 @@
 title = "Antoine Prudhomme"
 +++
 
-# Antoine Prudhomme
-
 Software Engineer &mdash; [LinkedIn](https://www.linkedin.com/in/antoine-prudhomme/) &middot; [GitHub](https://github.com/antoineprdhmm)
 
 ## Projects
