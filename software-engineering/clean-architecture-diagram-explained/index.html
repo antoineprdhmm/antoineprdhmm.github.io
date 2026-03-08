@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Clean Architecture is a foundational book for software engineers. Once you understand its principles, software design becomes much easier, and you can focus on what really matters.">
+    <title>Antoine Prudhomme | Clean Architecture - Understand the diagram once and for all</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=127f4a0aa91eb65703c3">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io">Antoine Prudhomme</a></h1>
+    <nav>
+        <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io">&larr; Home</a>
+    </nav>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Clean Architecture - Understand the diagram once and for all</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2026-02-08" class="post-date">
+                    February 08, 2026
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <img src="/clean-architecture-schema-explained/schema.png"/>
+<p><em>Clean Architecture</em> is a foundational book for software engineers. Once you understand its principles, software design becomes much easier, and you can focus on what really matters.</p>
+<p>There is always more to learn about design and architecture. But the book gives you solid foundations of how good software should be built.</p>
+<p>Yet, despite its popularity, I’ve noticed that many developers struggle with the famous “circles diagram.” And I can get it.</p>
+<p>So in this post, I’m going to explain the same ideas, but with a different approach, so you can finally get it.</p>
+<h2 id="start-with-the-real-problem-your-software-solves">Start with the real problem your software solves</h2>
+<p>Recently, I built an app called <a href="/pnlparse/introduction/"><strong>PNLParse</strong></a> for traders.</p>
+<p>When you trade, you buy and sell assets. If you sell higher than you bought, you make a profit. If you sell lower, you take a loss. The real calculations are more complex than that, but that’s the idea.</p>
+<p>PNLParse takes a list of transactions as input, performs calculations, and produces insights about your trading performance.</p>
+<p>Today, PNLParse is a desktop application with a database, a nice UI, file uploads, and more.</p>
+<p>But the first version was just a simple Rust script that processed hardcoded transactions.</p>
+<p>Just pure logic solving a real problem. At that moment, the software was nothing but the <em>core business logic</em>.</p>
+<p>That’s exactly what the <strong>yellow circle</strong> represents in the Clean Architecture diagram.</p>
+<h3 id="think-domain-rather-than-entities">Think “Domain” rather than “Entities”</h3>
+<p>In Clean Architecture, the innermost circle is labeled <strong>Entities</strong>, but I find that name confusing.</p>
+<p>A better and more common term is <strong>Domain</strong>.</p>
+<p>The domain is the problem space your software is built to solve.</p>
+<p>For PNLParse, the domain is not databases, authentication, or transactions file parsing.</p>
+<p>The domain is: trading performance analysis.</p>
+<p><strong>That is why the software exists.</strong></p>
+<p>The domain is more than just entities like <code>Transaction</code>. It also includes the business logic, the calculations, the invariants, etc ..</p>
+<p>For example:</p>
+<ul>
+<li>recording trades</li>
+<li>maintaining an inventory of owned assets</li>
+<li>calculating profit and loss</li>
+<li>computing performance metrics</li>
+</ul>
+<p>That logic belongs in the domain.</p>
+<h2 id="everything-else-exists-to-serve-the-domain">Everything else exists to serve the domain</h2>
+<p>Once you have a clear domain, everything else exists just to make it usable in the real world.</p>
+<p>For example:</p>
+<ul>
+<li>You don’t want transactions to be hardcoded → you need file uploads or an API</li>
+<li>You don’t want results printed in a terminal → you need a UI or a HTTP response</li>
+<li>You don’t want to recompute everything every time → you need a database</li>
+<li>You need authentication so users don’t see each other’s data</li>
+<li>You might need billing if you want to monetize your app</li>
+</ul>
+<p>None of this is your core business problem.</p>
+<p><strong>It’s all necessary, but it is not the reason your software exists.</strong></p>
+<p>This is what the outer circles in the diagram represent. They support the domain, they don’t define it.</p>
+<h2 id="what-users-actually-interact-with-use-cases">What users actually interact with: Use Cases</h2>
+<p>Users never directly interact with your domain. They interact with <strong>use cases</strong>.</p>
+<p>Think of your domain like the engine and mechanics of a car.</p>
+<p><strong>The user doesn’t want to understand how the engine works or get their hands dirt. They just want to sit in a comfortable seat, grab the steering wheel, press the pedals, and turn on the radio.</strong></p>
+<p>That’s exactly what use cases are.</p>
+<p>They provide a user-friendly way to interact with the system.</p>
+<p>Examples of use cases might be:</p>
+<ul>
+<li>Upload transactions file</li>
+<li>Get portfolio performance</li>
+<li>Get trade details</li>
+</ul>
+<p>Login and registration are also use cases. Even though they are not part of your core business domain, they are still things your application must do.</p>
+<p>In Clean Architecture, this layer is often called <strong>Application Layer</strong> and use cases are defined in the layer.</p>
+<p>The job of the Application layer is mostly <strong>orchestration</strong> between:</p>
+<ul>
+<li>the domain (business logic)</li>
+<li>technical components (database, files, APIs)</li>
+<li>application rules (auth, permissions, billing)</li>
+</ul>
+<p>For example, in PNLParse, there is a use case to upload transactions file.</p>
+<p>This use case does several things:</p>
+<ol>
+<li>It receives a file from the user</li>
+<li>It extracts transactions from that file</li>
+<li>It sends those transactions to the domain for calculations</li>
+<li>It saves the results in the database</li>
+</ol>
+<p>The use case is not doing heavy business logic itself. It’s coordinating different parts of the system. That’s exactly what the Application layer is supposed to do.</p>
+<h2 id="the-application-layer-is-not-technical-it-depends-on-abstractions">The application layer is not technical, It depends on abstractions</h2>
+<p>Let’s take <strong>data storage</strong> as a concrete example.</p>
+<p>The <strong>domain layer</strong> does not care about storage and databases. It simply takes some input entities, applies business rules, and produces new entities as output. Whether those results are stored in PostgreSQL, a JSON file, or in memory is irrelevant to the business logic.</p>
+<p>The <strong>application layer does care about persistence.</strong> It needs to ensure data is available for other use cases.</p>
+<p>But the <strong>application layer must remain non-technical.</strong> It should not depend directly on PostgreSQL, MongoDB, or any concrete database technology.</p>
+<p>So it defines <strong>a contract</strong> (interface), describing what it needs.</p>
+<p>To persist business entities, the application layer typically defines an <strong>interface</strong> for a <strong>Repository</strong>.</p>
+<p>This interface lives in the <strong>application layer</strong>.</p>
+<p>Now comes the green layer, labeled <strong>Interface Adapters</strong>,  but often called <strong>Infrastructure</strong>.</p>
+<p>This layer will provide one or different <strong>implementations</strong> of that interface.</p>
+<p>Application layer can then use an implementation of this interface without knowing which one it actually is. At startup (app bootstrap), you can decide which implementation to inject.</p>
+<p><strong>Use cases don’t change</strong>, and <strong>domain doesn’t change</strong>.</p>
+<h2 id="use-cases-as-generic-entry-points">Use cases as generic entry points</h2>
+<p>You can think of use cases as <strong>technology-agnostic entry points</strong> into your application.</p>
+<p>They describe <em>what your application can do</em>, not <em>how it is exposed to the user</em>.</p>
+<p>In a web application, you typically have an HTTP server.</p>
+<p>Each API route corresponds to a <strong>handler (or controller)</strong> in the infrastructure layer.</p>
+<p>A typical flow looks like this:</p>
+<ol>
+<li>The controller receives an HTTP request</li>
+<li>It extracts parameters from the body or URL</li>
+<li>It calls the appropriate use case</li>
+<li>It formats and returns an HTTP response</li>
+</ol>
+<p>Everything HTTP related is <strong>purely technical</strong>, so it belongs in the infrastructure layer.</p>
+<p>The controller does <strong>not contain business logic,</strong> it just adapts the outside world (HTTP) to your application.</p>
+<p>Now imagine that tomorrow you decide you don’t want a web app anymore, but a desktop app.</p>
+<p>With Clean Architecture, this is easy.</p>
+<p>You <strong>do not change</strong> your domain or use cases. You can even keep the HTTP server code.</p>
+<p>You simply add the handlers for the desktop app framework calling your use cases. Llike <a href="https://v2.tauri.app/develop/calling-rust/">Tauri commands</a> if you build a desktop app in Rust.</p>
+<p>Only the infrastructure changes.</p>
+<h2 id="about-the-blue-layer">About the blue layer</h2>
+<p>In the diagram, there is a separate <strong>blue layer</strong> outside the green one.</p>
+<p>Personally, I find this confusing.</p>
+<p>Conceptually, it is still part of <strong>infrastructure</strong>. You can merge both in your head and just think about infrastructure layer in mind instead. Result will be the same, and it’s much simpler to conceptualise.</p>
+<h2 id="inner-circles-outer-circles-and-arrows">Inner circles, outer circles, and arrows</h2>
+<p>The domain is in the center.</p>
+<p>There is *no arrow going out of it because it depends on nothing. It is pure business logic and technology agnostic.</p>
+<p>The application layer depends on the domain, which is why the arrow points from application to domain.</p>
+<p>Application orchestrates domain logic, but it does not influence it.</p>
+<p>Application is also not technical. Instead, it defines what it needs. It does this using interfaces.</p>
+<p>The Infrastructure layer implements these interfaces. That is why the arrow goes from Infrastructure to Application.</p>
+<p><strong>This rule is often violated, which leads to problems such as: using database models as domain entities and coupling business logic to PostgreSQL or an ORM.</strong></p>
+<h3 id="dependency-direction-with-the-repository-example">Dependency direction with the Repository example</h3>
+<ul>
+<li>
+<p><strong>Domain</strong> defines the business entity <code>Transaction</code>.</p>
+</li>
+<li>
+<p><strong>Application</strong> defines a repository <strong>interface</strong>, <code>TransactionRepository</code>, using <code>Transaction</code>, describing the storage needs for <code>Transaction</code>.</p>
+<p>The method signatures must contain <strong>nothing technical</strong>.</p>
+<p>If the repository can return an error, it must be an <strong>abstract error defined in the application layer</strong>, not an error from a specific database or library.</p>
+</li>
+<li>
+<p><strong>Infrastructure</strong> provides concrete implementations, such as <code>PostgresTransactionRepository</code>.</p>
+</li>
+</ul>
+<h2 id="practical-usage">Practical usage</h2>
+<p>A common practice is to create these 3 folders in your project: <em>application</em>, <em>domain</em> and <em>infrastructure</em>. This is not a requirement, but it can helps to visualize the layers.</p>
+<h3 id="where-to-put-things">Where to put things</h3>
+<p>Now you’re in your IDE with these 3 folders. How do you decide where code belongs?</p>
+<h4 id="1-is-this-part-of-the-core-problem-i-m-solving">1 — Is this part of the core problem I’m solving?</h4>
+<p>Imagine your app as a simple script. No database, no API, no users, no billing, no UI.</p>
+<p>If it still makes sense in that context, it probably belongs in <strong>domain</strong>.</p>
+<h4 id="2-is-this-purely-technical-and-replaceable">2 — Is this purely technical and replaceable?</h4>
+<p>If you could change it tomorrow <strong>without affecting your users or your domain</strong>, then it’s <strong>infrastructure</strong>.</p>
+<ul>
+<li>SQL or NoSQL queries</li>
+<li>the HTTP framework you use</li>
+<li>cloud providers</li>
+<li>external APIs for market data</li>
+<li>reading from an FTP server instead of an API</li>
+</ul>
+<p>These are implementation details. You should be able to swap them without touching your core logic.</p>
+<h4 id="3-if-it-s-neither-of-the-above">3 — If it’s neither of the above</h4>
+<p>Then it’s likely <strong>application layer</strong>.</p>
+<h2 id="should-you-use-this-architecture-everywhere">Should you use this architecture everywhere?</h2>
+<p><strong>No.</strong></p>
+<p>The full <em>domain/application/infrastructure</em> separation is a great architecture, but it’s not always worth the cost.</p>
+<p>On a small project, it can be overkill. You might end up with more boilerplate code than useful code.</p>
+<p>On a legacy codebase, migrating everything to Clean Architecture can be <strong>extremely expensive</strong>, and in most cases there is little or no business benefit to refactoring 100% of the system.</p>
+<p>That said, even if you don’t apply it strictly, it’s still <strong>essential to understand these ideas</strong> as a software engineer.</p>
+<p>If you keep these principles in mind, you can already get most of the benefits by:</p>
+<ul>
+<li>protecting your domain</li>
+<li>avoiding technical leakage into business logic</li>
+<li>depending on abstractions instead of concrete tools.</li>
+</ul>
+<p>Also, some parts of your system are more critical than others, and those are usually the places where this architecture matters the most.</p>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <p>&copy; 2026 Antoine Prudhomme</p>
+    </footer>
+</body>
+</html>

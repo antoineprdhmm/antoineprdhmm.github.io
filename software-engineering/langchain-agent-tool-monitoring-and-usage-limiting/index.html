@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn how monitor a Langchain agent usage with Datadog and limit the usage of his tools.">
+    <title>Antoine Prudhomme | Langchain Agent tool monitoring and usage limiting</title>
+    
+    <link rel="stylesheet" href="https://antoineprdhmm.github.io/style.css?h=127f4a0aa91eb65703c3">
+    
+    
+        
+    
+</head>
+<body>
+    
+<header>
+    <h1><a href="https:&#x2F;&#x2F;antoineprdhmm.github.io">Antoine Prudhomme</a></h1>
+    <nav>
+        <a href="https:&#x2F;&#x2F;antoineprdhmm.github.io">&larr; Home</a>
+    </nav>
+</header>
+
+    
+    
+<main>
+    <article class="post">
+        <header class="post-header">
+            <h1 class="post-title">Langchain Agent tool monitoring and usage limiting</h1>
+            
+            
+            <div class="post-meta">
+                
+                <time datetime="2023-08-31" class="post-date">
+                    August 31, 2023
+                </time>
+                
+
+                
+                
+                
+
+                
+            </div>
+            
+        </header>
+        
+        <div class="post-content">
+            <p>LLM agents are powerful.</p>
+<p>Given an Open AI API key and some tools, the agent can solve complex
+problems by itself like a grown man.</p>
+<p>But unlike when we the code by ourselves, we don’t know what the agent
+will do:</p>
+<ul>
+<li>How many calls to the LLM is he going to do ?</li>
+<li>Which tool is he going to use ?</li>
+</ul>
+<p>Maybe some tools are using an expensive API, and to limit the cost, we
+want to limit the agent from using those too much.</p>
+<p>For example, the user might have a limited usage of a LLM tool
+depending of the pricing model he choose. Once his rate limit is
+reached, we don’t wan’t the agent to use the tool for this user
+anymore.</p>
+<p>Let’s see how we can do this.</p>
+<h2 id="monitoring-the-agent-usage">Monitoring the agent usage</h2>
+<p>The first step is to monitor the agent usage.</p>
+<h3 id="llm-usage">LLM usage</h3>
+<p>When creating a new instance of a model with Langchain, the OpenAI API
+key that the agent will use must be specified.</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">llm = ChatOpenAI(
+    temperature=0,
+    openai_api_key=&quot;&lt;OPEN AI API KEY&gt;&quot;,
+    model=&quot;gpt-3.5-turbo&quot;
+)
+</code></pre>
+<p>Each API key <a href="https://platform.openai.com/docs/guides/rate-limits/what-are-the-rate-limits-for-our-api">has a rate limit</a>.</p>
+<p>The rate limit is not as easy as the APIs we know to manage, because
+unlike these APIs, we don’t know how many calls will be made by the
+agent. One call to the agent might consume 2, 3, 4 or more calls to
+the LLM. We can’t know it in advance. Asking the agent to solve
+several prompts in parallel might lead to rate limit errors.</p>
+<p>To know how many requests and tokens have been used to solve a prompt,
+we can use <code>get_openai_callback</code></p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">with get_openai_callback() as cb:
+    response = llm.run(prompt)
+    print(f&quot;Requests: {cb.successful_requests}&quot;)
+    print(f&quot;Tokens: {cb.total_tokens}&quot;)
+</code></pre>
+<h3 id="tool-usage">Tool usage</h3>
+<p>Say there is a tool that the agent can use to get infos about a
+LinkedIn profile, given the LinkedIn profile URL.</p>
+<p>Here is how this tool could be implemented:</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">class LinkedinScraper():
+
+def __init__(self):
+    self._params = {}
+
+def build(self):
+    async def scrap_linkedin(url: str):
+        print(&quot;Linkedin scraping tool used&quot;)
+
+        # ...
+        # scrap the linkedin page
+        # ...
+
+        return &quot;&lt;linkedin page summary&gt;&quot;
+
+    return scrap_linkedin
+
+scrap_linkedin = LinkedinScraper().build()
+
+tools = []
+
+# ...
+# maybe some other tools
+# ...
+
+tools.append(
+    Tool.from_function(
+        func=scrap_linkedin_person,
+        coroutine=scrap_linkedin_person,
+        name=&quot;linkedin_scraper&quot;,
+        description=&quot;Useful to get infos about a linkedin profile.&quot;
+    ),
+)
+
+agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_MULTI_FUNCTIONS)
+</code></pre>
+<p>Each time the agent will use the tool, <code>scrap_linkedin</code> will be
+called.</p>
+<p>The tool is just a function returning a string. But we are using a
+class as a builder to give the function access to some values.</p>
+<h2 id="sending-metrics-to-an-observability-platform">Sending metrics to an observability platform</h2>
+<p>To get a clear overview of the usage, we can use a platform like
+Datadog or Grafana.</p>
+<p>Logs are not made to track usage. Instead, we should send metrics to
+one of this platform, and create a timeseries to vizualise the usage
+over time.</p>
+<p>Here is an example of a metrics tracker, sending metrics to Datadog.</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">import os
+
+from datadog import initialize, statsd
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class MetricsTracker:
+    def __init__(self):
+        options = {
+            &#x27;statsd_host&#x27;: os.getenv(&#x27;STATSD_HOST&#x27;),
+            &#x27;statsd_port&#x27;: os.getenv(&#x27;STATSD_PORT&#x27;)
+        }
+        initialize(**options)
+
+    def increment(self, label, nb_occurences=1):
+            statsd.increment(&quot;llm_agent.&quot; + label, value=nb_occurences)
+</code></pre>
+<p>We can replace the <code>print</code> in the <code>scrap_linkedin</code> function
+with the following code to increment the metric each time the tool is
+used by the agent.</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">metrics_tracker = MetricsTracker()
+metrics_tracker.increment(label=&quot;tool.called.linkedin_scrapper&quot;)
+</code></pre>
+<h2 id="limiting-the-usage-of-the-tool">Limiting the usage of the tool</h2>
+<p>Now that we know the usage of the tool, maybe we want to limit the
+agent from using it.</p>
+<p>We can imagine different kind of limits. Let’s see how to implement a
+user based daily rate limiting.</p>
+<p>The idea is actually pretty simple:</p>
+<ul>
+<li>When creating new instance of the tool, we pass the user id as
+parameter</li>
+<li>At the beginning of the tool, we verify that the user rate
+limit has not been reached
+<ul>
+<li>if it has been reached, then we return an error</li>
+<li>if not, we continue</li>
+</ul>
+</li>
+</ul>
+<p>It’s important to note here that we don’t throw an error from the
+tool. Instead, we return a string with a message saying the tool can’t
+be used to get the information about this profile.</p>
+<p>By doing this, the agent will not fail, and might try another solution
+to find infos about this profile. For example, if the agent has
+another tool to search on Google, maybe he will use it.</p>
+<p>Here is a simple function to verify if the user has reached the rate
+limit or not.</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">import os
+
+from redis import Redis
+from dotenv import load_dotenv
+
+load_dotenv()
+
+redis = Redis(host=os.getenv(&#x27;REDIS_HOST&#x27;), port=int(os.getenv(&#x27;REDIS_PORT&#x27;)),
+          password=os.getenv(&#x27;REDIS_PASSWORD&#x27;), decode_responses=True)
+
+LINKEDIN_RATE_LIMIT = 200
+
+def get_is_linkedin_scrapper_request_authorized(user_id):
+    key = &quot;linkedin_&quot; + user_id
+
+    count = int(redis.get(key)) if redis.exists(key) else 0
+
+    is_rate_limit_reached = count &gt;= LINKEDIN_RATE_LIMIT
+    if is_rate_limit_reached:
+        return False
+
+    redis.set(key, count + 1)
+
+    return True
+</code></pre>
+<p>With a cron job running every day to clean the Redis database, this is
+a simple way to implement a daily based user rate limiting.</p>
+<p>Finally, we can use this function in the tool.</p>
+<pre data-lang="python" class="language-python "><code class="language-python" data-lang="python">class LinkedinScraper():
+    user_id: str = &quot;&quot;
+
+    def __init__(self, user_id: str):
+        self._params = {}
+        self.user_id = user_id
+
+    def build(self):
+        async def scrap_linkedin(url: str):
+            is_authorized = get_is_linkedin_scrapper_request_authorized(self.user_id)
+
+            if not is_authorized:
+                return &quot;Not authorized to get infos on this profile.&quot;
+
+            # scrap the linkedin page
+
+            return &quot;&lt;linkedin page summary&gt;&quot;
+
+        return scrap_linkedin
+</code></pre>
+
+        </div>
+    </article>
+</main>
+
+    
+    <footer>
+        <p>&copy; 2026 Antoine Prudhomme</p>
+    </footer>
+</body>
+</html>
